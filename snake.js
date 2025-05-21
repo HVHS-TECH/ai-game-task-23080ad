@@ -88,6 +88,15 @@ function moveSnake() {
     }
 }
 
+// Check for food collision
+function checkFoodCollision() {
+    const head = snake[0];
+    if (head.x === food.x && head.y === food.y) {
+        score += 10;
+        generateFood();
+    }
+}
+
 // Draw the snake
 function drawSnake() {
     snake.forEach(segment => {
