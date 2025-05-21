@@ -13,6 +13,13 @@ let food = { x: 5 * gridSize, y: 5 * gridSize };
 let direction = "RIGHT";
 let changingDirection = false;
 let score = 0;
+let invincible = false; // Flag to track invincibility
+let speedBoostActive = false; // Flag to track speed boost
+let invincibilityTimer = 0; // Timer for invincibility
+let speedBoostTimer = 0; // Timer for speed boost
+
+// Power-ups array
+let powerUps = [];
 
 // Obstacles array
 let obstacles = [];
@@ -27,11 +34,29 @@ function gameLoop() {
     changingDirection = false;
     moveSnake();
     checkFoodCollision();
+    checkPowerUpCollision();
     clearCanvas();
     drawSnake();
     drawFood();
+    drawPowerUps();
     drawObstacles();
     drawScore();
+
+    // Power-up timers
+    if (invincible) {
+        invincibilityTimer--;
+        if (invincibilityTimer <= 0) {
+            invincible = false;
+        }
+    }
+
+    if (speedBoostActive) {
+        speedBoostTimer--;
+        if (speedBoostTimer <= 0) {
+            speedBoostActive = false;
+            snakeSpeed = 100; // Reset speed
+        }
+    }
 
     // Increase speed as score increases
     if (score % 50 === 0 && score !== 0) {
@@ -58,7 +83,7 @@ function gameOver() {
     }
     // Check if snake hits an obstacle
     for (let obstacle of obstacles) {
-        if (head.x === obstacle.x && head.y === obstacle.y) {
+        if (head.x === obstacle.x && head.y === obstacle.y && !invincible) {
             alert("Game Over! Final Score: " + score);
             document.location.reload();
             return true;
@@ -113,6 +138,35 @@ function checkFoodCollision() {
     }
 }
 
+// Check for power-up collision
+function checkPowerUpCollision() {
+    const head = snake[0];
+    for (let i = 0; i < powerUps.length; i++) {
+        if (head.x === powerUps[i].x && head.y === powerUps[i].y) {
+            if (powerUps[i].type === "speed") {
+                activateSpeedBoost();
+            } else if (powerUps[i].type === "invincibility") {
+                activateInvincibility();
+            }
+            powerUps.splice(i, 1); // Remove the power-up once it's eaten
+            break;
+        }
+    }
+}
+
+// Activate speed boost
+function activateSpeedBoost() {
+    speedBoostActive = true;
+    speedBoostTimer = 200; // Lasts for 200 ticks
+    snakeSpeed = 50; // Increase snake speed
+}
+
+// Activate invincibility
+function activateInvincibility() {
+    invincible = true;
+    invincibilityTimer = 200; // Lasts for 200 ticks
+}
+
 // Draw the snake
 function drawSnake() {
     snake.forEach(segment => {
@@ -127,12 +181,45 @@ function drawFood() {
     ctx.fillRect(food.x, food.y, gridSize, gridSize);
 }
 
-// Generate food at a random position
+// Draw power-ups
+function drawPowerUps() {
+    powerUps.forEach(powerUp => {
+        if (powerUp.type === "speed") {
+            ctx.fillStyle = "cyan";
+        } else if (powerUp.type === "invincibility") {
+            ctx.fillStyle = "purple";
+        }
+        ctx.fillRect(powerUp.x, powerUp.y, gridSize, gridSize);
+    });
+}
+
+// Generate food at a random position, ensuring it doesn't spawn on the snake
 function generateFood() {
-    food = {
-        x: Math.floor(Math.random() * gridCount) * gridSize,
-        y: Math.floor(Math.random() * gridCount) * gridSize
-    };
+    let foodPosition;
+    do {
+        foodPosition = {
+            x: Math.floor(Math.random() * gridCount) * gridSize,
+            y: Math.floor(Math.random() * gridCount) * gridSize
+        };
+    } while (isFoodOnSnake(foodPosition)); // Keep generating until food is not on the snake
+
+    food = foodPosition;
+    generatePowerUp(); // Generate a power-up after food
+}
+
+// Check if food position is occupied by the snake
+function isFoodOnSnake(position) {
+    return snake.some(segment => segment.x === position.x && segment.y === position.y);
+}
+
+// Generate random power-ups
+function generatePowerUp() {
+    if (Math.random() < 0.1) { // 10% chance to spawn a power-up
+        const powerUpType = Math.random() < 0.5 ? "speed" : "invincibility"; // 50% chance for each power-up
+        const x = Math.floor(Math.random() * gridCount) * gridSize;
+        const y = Math.floor(Math.random() * gridCount) * gridSize;
+        powerUps.push({ x, y, type: powerUpType });
+    }
 }
 
 // Draw obstacles
@@ -167,6 +254,3 @@ function drawScore() {
 // Start the game loop
 generateObstacles();
 gameLoop();
-if (score > localStorage.getItem("highScore")) {
-    localStorage.setItem("highScore", score);
-}
