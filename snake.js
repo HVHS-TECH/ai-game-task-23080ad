@@ -287,4 +287,40 @@ function animateExplosion() {
         // Remove parts that have "expired"
         explosionParts = explosionParts.filter(part => part.life > 0);
 
-        requestAnimationFrame(animateExplosion);
+        requestAnimationFrame(animateExplosion); // Continue animating the explosion
+    }
+}
+
+// Show the Restart button
+function showRestartButton() {
+    const restartButton = document.getElementById("restartButton");
+    restartButton.style.display = "block";
+}
+
+// Restart the game
+function restartGame() {
+    // Reset game variables
+    snake = [{ x: 8 * gridSize, y: 8 * gridSize }];
+    food = { x: 5 * gridSize, y: 5 * gridSize };
+    direction = "RIGHT";
+    changingDirection = false;
+    score = 0;
+    invincible = false;
+    speedBoostActive = false;
+    invincibilityTimer = 0;
+    speedBoostTimer = 0;
+    powerUps = [];
+    obstacles = [];
+    explosionParts = [];
+
+    // Hide the restart button
+    const restartButton = document.getElementById("restartButton");
+    restartButton.style.display = "none";
+
+    // Start the game loop again
+    gameLoop();
+}
+
+// Start the game loop
+generateObstacles();
+gameLoop();
