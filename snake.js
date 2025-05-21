@@ -5,15 +5,17 @@ const ctx = canvas.getContext("2d");
 const gridSize = 20;
 const canvasSize = 400;
 const gridCount = canvasSize / gridSize;
+let snakeSpeed = 100; // Initial game speed
 
 // Snake and food
-let snake = [
-    { x: 8 * gridSize, y: 8 * gridSize }
-];
+let snake = [{ x: 8 * gridSize, y: 8 * gridSize }];
 let food = { x: 5 * gridSize, y: 5 * gridSize };
 let direction = "RIGHT";
 let changingDirection = false;
 let score = 0;
+
+// Obstacles array
+let obstacles = [];
 
 // Event listener for direction change
 document.addEventListener("keydown", changeDirection);
@@ -21,16 +23,22 @@ document.addEventListener("keydown", changeDirection);
 // Game loop
 function gameLoop() {
     if (gameOver()) return;
-    
+
     changingDirection = false;
     moveSnake();
     checkFoodCollision();
     clearCanvas();
     drawSnake();
     drawFood();
+    drawObstacles();
     drawScore();
 
-    setTimeout(gameLoop, 100);
+    // Increase speed as score increases
+    if (score % 50 === 0 && score !== 0) {
+        snakeSpeed = Math.max(50, snakeSpeed - 5);  // Limit to a minimum speed
+    }
+
+    setTimeout(gameLoop, snakeSpeed);
 }
 
 // Game Over
@@ -48,6 +56,14 @@ function gameOver() {
             return true;
         }
     }
+    // Check if snake hits an obstacle
+    for (let obstacle of obstacles) {
+        if (head.x === obstacle.x && head.y === obstacle.y) {
+            alert("Game Over! Final Score: " + score);
+            document.location.reload();
+            return true;
+        }
+    }
     return false;
 }
 
@@ -55,7 +71,7 @@ function gameOver() {
 function changeDirection(event) {
     if (changingDirection) return;
     changingDirection = true;
-    
+
     const keyPressed = event.keyCode;
     if (keyPressed === 37 && direction !== "RIGHT") {
         direction = "LEFT";
@@ -119,6 +135,23 @@ function generateFood() {
     };
 }
 
+// Draw obstacles
+function drawObstacles() {
+    ctx.fillStyle = "orange";
+    obstacles.forEach(obstacle => {
+        ctx.fillRect(obstacle.x, obstacle.y, gridSize, gridSize);
+    });
+}
+
+// Generate obstacles randomly
+function generateObstacles() {
+    if (Math.random() < 0.05 && obstacles.length < 5) {
+        const x = Math.floor(Math.random() * gridCount) * gridSize;
+        const y = Math.floor(Math.random() * gridCount) * gridSize;
+        obstacles.push({ x, y });
+    }
+}
+
 // Clear the canvas
 function clearCanvas() {
     ctx.clearRect(0, 0, canvasSize, canvasSize);
@@ -132,4 +165,9 @@ function drawScore() {
 }
 
 // Start the game loop
+generateObstacles();
+
 gameLoop();
+if (score > localStorage.getItem("highScore")) {
+    localStorage.setItem("highScore", score);
+}
