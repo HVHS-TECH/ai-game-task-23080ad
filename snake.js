@@ -24,6 +24,9 @@ let powerUps = [];
 // Obstacles array
 let obstacles = [];
 
+// Explosion state
+let explosionParts = [];
+
 // Event listener for direction change
 document.addEventListener("keydown", changeDirection);
 
@@ -70,22 +73,31 @@ function gameLoop() {
 function gameOver() {
     const head = snake[0];
     if (head.x < 0 || head.x >= canvasSize || head.y < 0 || head.y >= canvasSize) {
-        alert("Game Over! Final Score: " + score);
-        document.location.reload();
+        explodeSnake();
+        setTimeout(() => {
+            alert("Game Over! Final Score: " + score);
+            document.location.reload();
+        }, 500); // Wait for the explosion animation
         return true;
     }
     for (let i = 1; i < snake.length; i++) {
         if (snake[i].x === head.x && snake[i].y === head.y) {
-            alert("Game Over! Final Score: " + score);
-            document.location.reload();
+            explodeSnake();
+            setTimeout(() => {
+                alert("Game Over! Final Score: " + score);
+                document.location.reload();
+            }, 500); // Wait for the explosion animation
             return true;
         }
     }
     // Check if snake hits an obstacle
     for (let obstacle of obstacles) {
         if (head.x === obstacle.x && head.y === obstacle.y && !invincible) {
-            alert("Game Over! Final Score: " + score);
-            document.location.reload();
+            explodeSnake();
+            setTimeout(() => {
+                alert("Game Over! Final Score: " + score);
+                document.location.reload();
+            }, 500); // Wait for the explosion animation
             return true;
         }
     }
@@ -249,6 +261,43 @@ function drawScore() {
     ctx.fillStyle = "white";
     ctx.font = "20px Arial";
     ctx.fillText("Score: " + score, 10, 30);
+}
+
+// Create explosion effect when the snake dies
+function explodeSnake() {
+    explosionParts = [];
+    snake.forEach(segment => {
+        for (let i = 0; i < 5; i++) { // Create 5 parts for each snake segment
+            explosionParts.push({
+                x: segment.x,
+                y: segment.y,
+                dx: (Math.random() - 0.5) * 5, // Random horizontal velocity
+                dy: (Math.random() - 0.5) * 5, // Random vertical velocity
+                life: 50 // How long it lasts before disappearing
+            });
+        }
+    });
+
+    animateExplosion();
+}
+
+// Animate the explosion effect
+function animateExplosion() {
+    if (explosionParts.length > 0) {
+        clearCanvas();
+        explosionParts.forEach(part => {
+            part.x += part.dx;
+            part.y += part.dy;
+            part.life--;
+            ctx.fillStyle = "yellow";
+            ctx.fillRect(part.x, part.y, gridSize / 2, gridSize / 2); // Draw explosion part
+        });
+
+        // Remove parts that have "expired"
+        explosionParts = explosionParts.filter(part => part.life > 0);
+
+        requestAnimationFrame(animateExplosion); // Continue animating the explosion
+    }
 }
 
 // Start the game loop
