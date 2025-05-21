@@ -284,4 +284,28 @@ function animateExplosion() {
 }
 
 // Show the restart button
-function
+function restartGame() {
+    snake = [{ x: 8 * gridSize, y: 8 * gridSize }];
+    food = { x: 5 * gridSize, y: 5 * gridSize };
+    direction = "RIGHT";
+    changingDirection = false;
+    score = 0;
+    invincible = false;
+    speedBoostActive = false;
+    invincibilityTimer = 0;
+    speedBoostTimer = 0;
+    powerUps = [];
+    obstacles = [];
+    explosionParts = [];
+
+    // Hide restart button
+    const restartButton = document.getElementById("restartButton");
+    restartButton.style.display = "none";
+
+    // Restart game loop
+    gameLoop();
+}
+
+// Start the game loop
+generateObstacles();
+gameLoop();
