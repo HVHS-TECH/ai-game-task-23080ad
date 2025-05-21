@@ -1,13 +1,11 @@
 const canvas = document.getElementById("gameCanvas");
 const ctx = canvas.getContext("2d");
 
-// Game settings
 const gridSize = 20;
 const canvasSize = 400;
 const gridCount = canvasSize / gridSize;
 let snakeSpeed = 100; // Initial game speed
 
-// Snake and food
 let snake = [{ x: 8 * gridSize, y: 8 * gridSize }];
 let food = { x: 5 * gridSize, y: 5 * gridSize };
 let direction = "RIGHT";
@@ -27,10 +25,9 @@ let obstacles = [];
 // Explosion state
 let explosionParts = [];
 
-// Event listener for direction change
 document.addEventListener("keydown", changeDirection);
 
-// Game loop
+// Main game loop
 function gameLoop() {
     if (gameOver()) return;
 
@@ -45,7 +42,7 @@ function gameLoop() {
     drawObstacles();
     drawScore();
 
-    // Power-up timers
+    // Handle power-up timers
     if (invincible) {
         invincibilityTimer--;
         if (invincibilityTimer <= 0) {
@@ -61,15 +58,10 @@ function gameLoop() {
         }
     }
 
-    // Increase speed as score increases
-    if (score % 50 === 0 && score !== 0) {
-        snakeSpeed = Math.max(50, snakeSpeed - 5);  // Limit to a minimum speed
-    }
-
     setTimeout(gameLoop, snakeSpeed);
 }
 
-// Game Over
+// Game Over check
 function gameOver() {
     const head = snake[0];
     if (head.x < 0 || head.x >= canvasSize || head.y < 0 || head.y >= canvasSize) {
@@ -84,6 +76,7 @@ function gameOver() {
             return true;
         }
     }
+
     // Check if snake hits an obstacle
     for (let obstacle of obstacles) {
         if (head.x === obstacle.x && head.y === obstacle.y && !invincible) {
@@ -95,7 +88,7 @@ function gameOver() {
     return false;
 }
 
-// Change direction based on key press
+// Direction change based on key press
 function changeDirection(event) {
     if (changingDirection) return;
     changingDirection = true;
@@ -132,7 +125,7 @@ function moveSnake() {
     }
 }
 
-// Check for food collision
+// Check if snake eats food
 function checkFoodCollision() {
     const head = snake[0];
     if (head.x === food.x && head.y === food.y) {
@@ -141,7 +134,7 @@ function checkFoodCollision() {
     }
 }
 
-// Check for power-up collision
+// Check if snake collides with power-up
 function checkPowerUpCollision() {
     const head = snake[0];
     for (let i = 0; i < powerUps.length; i++) {
@@ -151,23 +144,23 @@ function checkPowerUpCollision() {
             } else if (powerUps[i].type === "invincibility") {
                 activateInvincibility();
             }
-            powerUps.splice(i, 1); // Remove the power-up once it's eaten
+            powerUps.splice(i, 1); // Remove the power-up once eaten
             break;
         }
     }
 }
 
-// Activate speed boost
+// Activate speed boost power-up
 function activateSpeedBoost() {
     speedBoostActive = true;
-    speedBoostTimer = 200; // Lasts for 200 ticks
+    speedBoostTimer = 200; // Speed boost lasts for 200 frames
     snakeSpeed = 50; // Increase snake speed
 }
 
-// Activate invincibility
+// Activate invincibility power-up
 function activateInvincibility() {
     invincible = true;
-    invincibilityTimer = 200; // Lasts for 200 ticks
+    invincibilityTimer = 200; // Invincibility lasts for 200 frames
 }
 
 // Draw the snake
@@ -196,7 +189,7 @@ function drawPowerUps() {
     });
 }
 
-// Generate food at a random position, ensuring it doesn't spawn on the snake
+// Generate food at a random position
 function generateFood() {
     let foodPosition;
     do {
@@ -204,7 +197,7 @@ function generateFood() {
             x: Math.floor(Math.random() * gridCount) * gridSize,
             y: Math.floor(Math.random() * gridCount) * gridSize
         };
-    } while (isFoodOnSnake(foodPosition)); // Keep generating until food is not on the snake
+    } while (isFoodOnSnake(foodPosition)); // Ensure food doesn't spawn on the snake
 
     food = foodPosition;
     generatePowerUp(); // Generate a power-up after food
@@ -272,7 +265,7 @@ function explodeSnake() {
     animateExplosion();
 }
 
-// Animate the explosion effect
+// Animate explosion effect
 function animateExplosion() {
     if (explosionParts.length > 0) {
         clearCanvas();
@@ -284,43 +277,11 @@ function animateExplosion() {
             ctx.fillRect(part.x, part.y, gridSize / 2, gridSize / 2); // Draw explosion part
         });
 
-        // Remove parts that have "expired"
         explosionParts = explosionParts.filter(part => part.life > 0);
 
-        requestAnimationFrame(animateExplosion); // Continue animating the explosion
+        requestAnimationFrame(animateExplosion); // Continue animating explosion
     }
 }
 
-// Show the Restart button
-function showRestartButton() {
-    const restartButton = document.getElementById("restartButton");
-    restartButton.style.display = "block";
-}
-
-// Restart the game
-function restartGame() {
-    // Reset game variables
-    snake = [{ x: 8 * gridSize, y: 8 * gridSize }];
-    food = { x: 5 * gridSize, y: 5 * gridSize };
-    direction = "RIGHT";
-    changingDirection = false;
-    score = 0;
-    invincible = false;
-    speedBoostActive = false;
-    invincibilityTimer = 0;
-    speedBoostTimer = 0;
-    powerUps = [];
-    obstacles = [];
-    explosionParts = [];
-
-    // Hide the restart button
-    const restartButton = document.getElementById("restartButton");
-    restartButton.style.display = "none";
-
-    // Start the game loop again
-    gameLoop();
-}
-
-// Start the game loop
-generateObstacles();
-gameLoop();
+// Show the restart button
+function
