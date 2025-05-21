@@ -74,19 +74,13 @@ function gameOver() {
     const head = snake[0];
     if (head.x < 0 || head.x >= canvasSize || head.y < 0 || head.y >= canvasSize) {
         explodeSnake();
-        setTimeout(() => {
-            alert("Game Over! Final Score: " + score);
-            document.location.reload();
-        }, 500); // Wait for the explosion animation
+        showRestartButton();
         return true;
     }
     for (let i = 1; i < snake.length; i++) {
         if (snake[i].x === head.x && snake[i].y === head.y) {
             explodeSnake();
-            setTimeout(() => {
-                alert("Game Over! Final Score: " + score);
-                document.location.reload();
-            }, 500); // Wait for the explosion animation
+            showRestartButton();
             return true;
         }
     }
@@ -94,10 +88,7 @@ function gameOver() {
     for (let obstacle of obstacles) {
         if (head.x === obstacle.x && head.y === obstacle.y && !invincible) {
             explodeSnake();
-            setTimeout(() => {
-                alert("Game Over! Final Score: " + score);
-                document.location.reload();
-            }, 500); // Wait for the explosion animation
+            showRestartButton();
             return true;
         }
     }
@@ -296,10 +287,4 @@ function animateExplosion() {
         // Remove parts that have "expired"
         explosionParts = explosionParts.filter(part => part.life > 0);
 
-        requestAnimationFrame(animateExplosion); // Continue animating the explosion
-    }
-}
-
-// Start the game loop
-generateObstacles();
-gameLoop();
+        requestAnimationFrame(animateExplosion);
