@@ -166,7 +166,6 @@ function drawScore() {
 
 // Start the game loop
 generateObstacles();
-
 gameLoop();
 if (score > localStorage.getItem("highScore")) {
     localStorage.setItem("highScore", score);
